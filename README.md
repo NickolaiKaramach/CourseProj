@@ -1,2 +1,2 @@
 # sping-boot-test
-TO run use: mvn spring-boot:run
+To run use: mvn spring-boot:run
