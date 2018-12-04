@@ -27,7 +27,7 @@ public class SignInService {
                 accessLevel = customer.getAccessLevel();
             }
         } else {
-            throw new ServiceException("Invalid data!");
+            throw new ServiceException("Данные некорректны!");
         }
 
         return accessLevel;

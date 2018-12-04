@@ -42,7 +42,7 @@ public class LogInController {
             }
         } catch (ServiceException e) {
             //TODO: LOG !
-            msg = DEFAULT_MESSAGE;
+            msg = e.getMessage();
             accessLevel = -1;
         }
 
