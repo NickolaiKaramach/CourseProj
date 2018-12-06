@@ -1,19 +1,16 @@
 package by.bsuir.karamach.serviceworker.entity;
 
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
+import javax.persistence.*;
+import java.util.Set;
 
 @Entity
+@Table(name = "customers")
 public class Customer {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Integer id;
 
     private String email;
-
-    private String password;
 
     private String lastName;
 
@@ -23,7 +20,15 @@ public class Customer {
 
     private int birthYear;
 
-    private int accessLevel = 0;
+    @ElementCollection(targetClass = AccessRole.class, fetch = FetchType.EAGER)
+    @CollectionTable(name = "user_role", joinColumns = @JoinColumn(name = "customer_id"))
+    @Enumerated(EnumType.STRING)
+    private Set<AccessRole> role;
+
+
+    private String hashedPass;
+
+    private String tempToken;
 
     public Integer getId() {
         return id;
@@ -41,12 +46,20 @@ public class Customer {
         this.email = email;
     }
 
-    public String getPassword() {
-        return password;
+    public String getHashedPass() {
+        return hashedPass;
     }
 
-    public void setPassword(String password) {
-        this.password = password;
+    public void setHashedPass(String hashedPass) {
+        this.hashedPass = hashedPass;
+    }
+
+    public String getTempToken() {
+        return tempToken;
+    }
+
+    public void setTempToken(String tempToken) {
+        this.tempToken = tempToken;
     }
 
     public String getLastName() {
@@ -81,11 +94,11 @@ public class Customer {
         this.birthYear = birthYear;
     }
 
-    public int getAccessLevel() {
-        return accessLevel;
+    public Set<AccessRole> getRole() {
+        return role;
     }
 
-    public void setAccessLevel(int accessLevel) {
-        this.accessLevel = accessLevel;
+    public void setRole(Set<AccessRole> role) {
+        this.role = role;
     }
 }

@@ -1,8 +1,11 @@
 package by.bsuir.karamach.serviceworker.entity;
 
 import javax.persistence.*;
+import java.util.HashSet;
+import java.util.Set;
 
 @Entity
+@Table(name = "trainers")
 public class Trainer {
 
     @OneToOne(cascade = CascadeType.ALL)
@@ -13,9 +16,15 @@ public class Trainer {
     @GeneratedValue(strategy = GenerationType.AUTO)
     private int id;
 
-    private String mainSubjectName;
-
-    private String additionalSubjectName;
+    @ManyToMany(fetch = FetchType.EAGER,
+            cascade = {
+                    CascadeType.PERSIST,
+                    CascadeType.MERGE
+            })
+    @JoinTable(name = "trainers_subjects",
+            joinColumns = {@JoinColumn(name = "trainer_id")},
+            inverseJoinColumns = {@JoinColumn(name = "subject_id")})
+    private Set<Subject> subject = new HashSet<>();
 
     private String lessonType;
 
@@ -43,22 +52,6 @@ public class Trainer {
 
     public void setId(int id) {
         this.id = id;
-    }
-
-    public String getMainSubjectName() {
-        return mainSubjectName;
-    }
-
-    public void setMainSubjectName(String mainSubjectName) {
-        this.mainSubjectName = mainSubjectName;
-    }
-
-    public String getAdditionalSubjectName() {
-        return additionalSubjectName;
-    }
-
-    public void setAdditionalSubjectName(String additionalSubjectName) {
-        this.additionalSubjectName = additionalSubjectName;
     }
 
     public String getLessonType() {
@@ -107,5 +100,13 @@ public class Trainer {
 
     public void setActive(boolean active) {
         this.active = active;
+    }
+
+    public Set<Subject> getSubject() {
+        return subject;
+    }
+
+    public void setSubject(Set<Subject> subject) {
+        this.subject = subject;
     }
 }

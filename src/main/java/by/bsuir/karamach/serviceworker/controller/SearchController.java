@@ -2,8 +2,8 @@ package by.bsuir.karamach.serviceworker.controller;
 
 import by.bsuir.karamach.serviceworker.entity.SearchResponse;
 import by.bsuir.karamach.serviceworker.entity.Trainer;
-import by.bsuir.karamach.serviceworker.logic.SearchService;
 import by.bsuir.karamach.serviceworker.logic.ServiceException;
+import by.bsuir.karamach.serviceworker.logic.impl.SearchService;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
