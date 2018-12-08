@@ -62,6 +62,7 @@ public class SignInController {
     public Object signIn(@RequestBody LoginInfo loginInfo,
                          HttpServletResponse resp) {
         String msg;
+        String token = null;
 
         String email = loginInfo.getEmail();
         String hashedPassword = loginInfo.getHashedPassword();
@@ -75,12 +76,13 @@ public class SignInController {
             if (customer != null) {
                 msg = STATUS_OK;
 
-                String token = securityHelper.generateTempToken();
+                String generateTempToken = securityHelper.generateTempToken();
+                token = customer.getTempToken();
 
-                customer.setTempToken(token);
+                customer.setTempToken(generateTempToken);
                 customerRepository.save(customer);
 
-                Cookie tokenCookie = new Cookie(TOKEN, token);
+                Cookie tokenCookie = new Cookie(TOKEN, generateTempToken);
                 tokenCookie.setMaxAge(EXPIRATION_TIME);
                 resp.addCookie(tokenCookie);
 
@@ -94,10 +96,38 @@ public class SignInController {
             isSuccessful = false;
         }
 
-        PositiveResponse positiveResponse = new PositiveResponse(isSuccessful);
         ErrorResponse errorResponse = new ErrorResponse(isSuccessful, msg);
 
-        return isSuccessful ? positiveResponse : errorResponse;
+        return isSuccessful ? new LoginResponse(isSuccessful, token) : errorResponse;
+    }
+
+    public static final class LoginResponse {
+        boolean isSuccessful;
+        String token;
+
+        public LoginResponse() {
+        }
+
+        public LoginResponse(boolean isSuccessful, String token) {
+            this.isSuccessful = isSuccessful;
+            this.token = token;
+        }
+
+        public boolean isSuccessful() {
+            return isSuccessful;
+        }
+
+        public void setSuccessful(boolean successful) {
+            isSuccessful = successful;
+        }
+
+        public String getToken() {
+            return token;
+        }
+
+        public void setToken(String token) {
+            this.token = token;
+        }
     }
 
     @RequestMapping(path = "/logout")
