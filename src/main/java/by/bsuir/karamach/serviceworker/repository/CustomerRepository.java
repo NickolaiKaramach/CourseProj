@@ -9,4 +9,6 @@ public interface CustomerRepository extends CrudRepository<Customer, Integer> {
     Customer findByTempToken(String tempToken);
 
     Customer findByEmail(String email);
+
+    Customer findByActivationCode(String code);
 }

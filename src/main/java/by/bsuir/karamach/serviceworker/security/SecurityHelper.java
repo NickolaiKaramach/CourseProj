@@ -3,6 +3,7 @@ package by.bsuir.karamach.serviceworker.security;
 import org.springframework.stereotype.Component;
 
 import java.security.SecureRandom;
+import java.util.UUID;
 
 @Component
 public class SecurityHelper {
@@ -17,5 +18,9 @@ public class SecurityHelper {
         String token = bytes.toString();
 
         return token;
+    }
+
+    public String generateActivationCode() {
+        return UUID.randomUUID().toString();
     }
 }

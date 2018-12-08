@@ -2,6 +2,7 @@ package by.bsuir.karamach.serviceworker.controller;
 
 import by.bsuir.karamach.serviceworker.entity.Customer;
 import by.bsuir.karamach.serviceworker.logic.ServiceException;
+import by.bsuir.karamach.serviceworker.logic.impl.MailSender;
 import by.bsuir.karamach.serviceworker.logic.impl.SignInService;
 import by.bsuir.karamach.serviceworker.repository.CustomerRepository;
 import by.bsuir.karamach.serviceworker.security.SecurityHelper;
@@ -26,6 +27,14 @@ public class SignInController {
     private static final String EMPTY_VALUE = "";
     private static final String EMPTY_PATH = "/";
     private static final String LOG_OUT_STATUS_OK = "Successfully logged out!";
+    private static final String STATUS_TO_BE_ACTIVATED = "Please activate ur account first, one more message will be sent!";
+    private static final String ACTIVATION_URL = "http://localhost:8080/activate/";
+    private static final String MESSAGE_TO_USER = "   Hello, %s! \n" +
+            "Welcome to our platform, \n" +
+            "To activate your account, visit this link: \n" +
+            ACTIVATION_URL + "%s";
+    private static final String ACCOUNT_ACTIVATION = "Account activation";
+
 
     private SignInService signInService;
 
@@ -33,13 +42,16 @@ public class SignInController {
 
     private SecurityHelper securityHelper;
 
+    private MailSender mailSender;
 
     public SignInController(SignInService signInService, CustomerRepository customerRepository,
-                            SecurityHelper securityHelper) {
+                            SecurityHelper securityHelper, MailSender mailSender) {
         this.signInService = signInService;
         this.customerRepository = customerRepository;
         this.securityHelper = securityHelper;
+        this.mailSender = mailSender;
     }
+
 
     @PostMapping
     public String signIn(String email, String hashedPassword,
@@ -49,17 +61,26 @@ public class SignInController {
         try {
             Customer customer = signInService.logIn(email, hashedPassword);
 
+
             if (customer != null) {
-                msg = STATUS_OK;
+                if (customer.getActivationCode() == null) {
+                    msg = STATUS_OK;
 
-                String token = securityHelper.generateTempToken();
+                    String token = securityHelper.generateTempToken();
 
-                customer.setTempToken(token);
-                customerRepository.save(customer);
+                    customer.setTempToken(token);
+                    customerRepository.save(customer);
 
-                Cookie tokenCookie = new Cookie(TOKEN, token);
-                tokenCookie.setMaxAge(EXPIRATION_TIME);
-                resp.addCookie(tokenCookie);
+                    Cookie tokenCookie = new Cookie(TOKEN, token);
+                    tokenCookie.setMaxAge(EXPIRATION_TIME);
+                    resp.addCookie(tokenCookie);
+                } else {
+                    msg = STATUS_TO_BE_ACTIVATED;
+                    String message = String.format(MESSAGE_TO_USER,
+                            customer.getFirstName(), customer.getActivationCode());
+
+                    mailSender.send(customer.getEmail(), ACCOUNT_ACTIVATION, message);
+                }
             } else {
                 msg = STATUS_BAD;
             }
@@ -67,6 +88,7 @@ public class SignInController {
             //TODO: Log !
             msg = e.getMessage();
         }
+
 
         return msg;
     }
