@@ -8,12 +8,7 @@ import by.bsuir.karamach.serviceworker.logic.ServiceException;
 import by.bsuir.karamach.serviceworker.logic.impl.RegisterService;
 import by.bsuir.karamach.serviceworker.repository.CustomerRepository;
 import by.bsuir.karamach.serviceworker.security.SecurityHelper;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RestController;
-
-import javax.servlet.http.HttpServletResponse;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 public class RegisterController {
@@ -38,10 +33,11 @@ public class RegisterController {
     }
 
     @GetMapping(path = "/activate/{code}")
-    public Object activate(@PathVariable String code, String publicId) {
+    public Object activate(@PathVariable String code, @RequestBody PublicIdObject idObject) {
 
         String message = null;
 
+        String publicId = idObject.publicId;
         try {
             registerService.activateUser(code, publicId);
         } catch (ServiceException e) {
@@ -54,32 +50,28 @@ public class RegisterController {
         return (message == null) ? positiveResponse : errorResponse;
     }
 
-
     @PostMapping(path = "/register/customer")
-    public Object addNewStudent(String email, String hashedPassword, String lastName,
-                                String firstName, boolean isFemale, int birthYear,
-                                HttpServletResponse resp) {
+    public Object addNewStudent(@RequestBody RegistrationRequest registrationRequest) {
 
         boolean isSuccessfully = true;
         String message = REGISTER_STATUS_OK;
 
-        RegistrationRequest request = getRegistrationRequestFromData
-                (email, hashedPassword, lastName,
-                        firstName, isFemale, birthYear);
-
-
         try {
-            registerService.createRegistrationRequest(request);
+            registerService.createRegistrationRequest(registrationRequest);
         } catch (ServiceException e) {
             isSuccessfully = false;
             message = e.getMessage();
         }
 
 
-        Object positiveResponse = new RegistrationRequestResponse(isSuccessfully, request.getGeneratedPublicId());
+        Object positiveResponse = new RegistrationRequestResponse(isSuccessfully, registrationRequest.getGeneratedPublicId());
         Object errorResponse = new ErrorResponse(isSuccessfully, message);
 
         return isSuccessfully ? positiveResponse : errorResponse;
+    }
+
+    public static final class PublicIdObject {
+        public String publicId;
     }
 
     private RegistrationRequest getRegistrationRequestFromData

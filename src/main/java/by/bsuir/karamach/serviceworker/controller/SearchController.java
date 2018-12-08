@@ -4,10 +4,7 @@ import by.bsuir.karamach.serviceworker.entity.SearchResponse;
 import by.bsuir.karamach.serviceworker.entity.Trainer;
 import by.bsuir.karamach.serviceworker.logic.ServiceException;
 import by.bsuir.karamach.serviceworker.logic.impl.SearchService;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -25,8 +22,11 @@ public class SearchController {
 
     @GetMapping
     public SearchResponse
-    getTrainerOnlyByTextAndPage(String text,
-                                @RequestParam(required = false, defaultValue = "0") int page) {
+    getTrainerOnlyByTextAndPage(@RequestBody SearchRequest searchRequest) {
+
+        String text = searchRequest.text;
+        int page = searchRequest.page;
+
         String message;
         List<Trainer> trainers;
 
@@ -56,5 +56,10 @@ public class SearchController {
         searchResponse.setMessage(message);
 
         return searchResponse;
+    }
+
+    public static final class SearchRequest {
+        public String text;
+        public int page;
     }
 }

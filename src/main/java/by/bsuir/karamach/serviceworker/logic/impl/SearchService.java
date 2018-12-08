@@ -38,7 +38,7 @@ public class SearchService {
         List<Trainer> trainers = null;
         int totalCount;
 
-        Subject subject = subjectRepository.findByNameContaining(searchingText);
+        Subject subject = subjectRepository.findByNameContains(searchingText);
 
         if ((subject != null) && (isValidText && isValidPage)) {
             totalCount = trainerRepository.countAllByActiveIsTrueAndSubjectContains(subject);

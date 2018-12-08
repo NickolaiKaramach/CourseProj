@@ -2,6 +2,7 @@ package by.bsuir.karamach.serviceworker.controller;
 
 import by.bsuir.karamach.serviceworker.entity.Customer;
 import by.bsuir.karamach.serviceworker.entity.ErrorResponse;
+import by.bsuir.karamach.serviceworker.entity.LoginInfo;
 import by.bsuir.karamach.serviceworker.entity.PositiveResponse;
 import by.bsuir.karamach.serviceworker.logic.ServiceException;
 import by.bsuir.karamach.serviceworker.logic.impl.MailSender;
@@ -9,6 +10,7 @@ import by.bsuir.karamach.serviceworker.logic.impl.SignInService;
 import by.bsuir.karamach.serviceworker.repository.CustomerRepository;
 import by.bsuir.karamach.serviceworker.security.SecurityHelper;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -55,10 +57,14 @@ public class SignInController {
     }
 
 
+
     @PostMapping(path = "/login")
-    public Object signIn(String email, String hashedPassword,
+    public Object signIn(@RequestBody LoginInfo loginInfo,
                          HttpServletResponse resp) {
         String msg;
+
+        String email = loginInfo.getEmail();
+        String hashedPassword = loginInfo.getHashedPassword();
 
         boolean isSuccessful = true;
 
