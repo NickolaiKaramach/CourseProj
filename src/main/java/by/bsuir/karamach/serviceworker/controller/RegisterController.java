@@ -1,6 +1,9 @@
 package by.bsuir.karamach.serviceworker.controller;
 
-import by.bsuir.karamach.serviceworker.entity.Customer;
+import by.bsuir.karamach.serviceworker.entity.ErrorResponse;
+import by.bsuir.karamach.serviceworker.entity.PositiveResponse;
+import by.bsuir.karamach.serviceworker.entity.RegistrationRequest;
+import by.bsuir.karamach.serviceworker.entity.RegistrationRequestResponse;
 import by.bsuir.karamach.serviceworker.logic.ServiceException;
 import by.bsuir.karamach.serviceworker.logic.impl.RegisterService;
 import by.bsuir.karamach.serviceworker.repository.CustomerRepository;
@@ -19,6 +22,8 @@ public class RegisterController {
     private static final int EXPIRATION_TIME = 5400;
     private static final String ACTIVATE_STATUS_OK = "Successfully activated!";
     private static final String ACTIVATE_STATUS_BAD = "Couldn't find activate code";
+    private static final boolean IS_SUCCESSFUL = true;
+    private static final boolean IS_NOT_SUCCESSFUL = false;
     private RegisterService registerService;
 
     private SecurityHelper securityHelper;
@@ -33,43 +38,67 @@ public class RegisterController {
     }
 
     @GetMapping(path = "/activate/{code}")
-    public String activate(@PathVariable String code) {
-        boolean isActivated = registerService.activateUser(code);
+    public Object activate(@PathVariable String code, String publicId) {
 
-        return isActivated ? ACTIVATE_STATUS_OK : ACTIVATE_STATUS_BAD;
-    }
-
-
-    @PostMapping(path = "/register/customer")
-    public String addNewStudent(String email, String hashedPassword, String lastName,
-                                String firstName, boolean isFemale, int birthYear,
-                                HttpServletResponse resp) {
-
-        String message = REGISTER_STATUS_OK;
-
-        Customer customer = getCustomerFromData
-                (email, hashedPassword, lastName,
-                        firstName, isFemale, birthYear);
+        String message = null;
 
         try {
-            registerService.createUser(customer);
-
+            registerService.activateUser(code, publicId);
         } catch (ServiceException e) {
             message = e.getMessage();
         }
 
+        PositiveResponse positiveResponse = new PositiveResponse(IS_SUCCESSFUL);
+        ErrorResponse errorResponse = new ErrorResponse(IS_NOT_SUCCESSFUL, message);
 
-        return message;
+        return (message == null) ? positiveResponse : errorResponse;
     }
 
-    private Customer getCustomerFromData(String email, String hashedPassword, String lastName, String firstName, boolean isFemale, int birthYear) {
-        Customer customer = new Customer();
-        customer.setEmail(email);
-        customer.setHashedPass(hashedPassword);
-        customer.setLastName(lastName);
-        customer.setFirstName(firstName);
-        customer.setFemale(isFemale);
-        customer.setBirthYear(birthYear);
-        return customer;
+
+    @PostMapping(path = "/register/customer")
+    public Object addNewStudent(String email, String hashedPassword, String lastName,
+                                String firstName, boolean isFemale, int birthYear,
+                                HttpServletResponse resp) {
+
+        boolean isSuccessfully = true;
+        String message = REGISTER_STATUS_OK;
+
+        RegistrationRequest request = getRegistrationRequestFromData
+                (email, hashedPassword, lastName,
+                        firstName, isFemale, birthYear);
+
+
+        try {
+            registerService.createRegistrationRequest(request);
+        } catch (ServiceException e) {
+            isSuccessfully = false;
+            message = e.getMessage();
+        }
+
+
+        Object positiveResponse = new RegistrationRequestResponse(isSuccessfully, request.getGeneratedPublicId());
+        Object errorResponse = new ErrorResponse(isSuccessfully, message);
+
+        return isSuccessfully ? positiveResponse : errorResponse;
+    }
+
+    private RegistrationRequest getRegistrationRequestFromData
+            (String email, String hashedPassword, String lastName,
+             String firstName, boolean isFemale, int birthYear) {
+
+        RegistrationRequest registrationRequest = new RegistrationRequest();
+
+        registrationRequest.setEmail(email);
+        registrationRequest.setHashedPass(hashedPassword);
+
+        registrationRequest.setLastName(lastName);
+        registrationRequest.setFirstName(firstName);
+        registrationRequest.setFemale(isFemale);
+        registrationRequest.setBirthYear(birthYear);
+
+        registrationRequest.setActivationCode(securityHelper.generateActivationCode());
+        registrationRequest.setGeneratedPublicId(securityHelper.generatePublicId());
+
+        return registrationRequest;
     }
 }

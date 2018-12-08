@@ -1,6 +1,8 @@
 package by.bsuir.karamach.serviceworker.controller;
 
 import by.bsuir.karamach.serviceworker.entity.Customer;
+import by.bsuir.karamach.serviceworker.entity.ErrorResponse;
+import by.bsuir.karamach.serviceworker.entity.PositiveResponse;
 import by.bsuir.karamach.serviceworker.logic.ServiceException;
 import by.bsuir.karamach.serviceworker.logic.impl.MailSender;
 import by.bsuir.karamach.serviceworker.logic.impl.SignInService;
@@ -17,7 +19,6 @@ import javax.servlet.http.HttpServletResponse;
 import static by.bsuir.karamach.serviceworker.controller.CookieParameterName.TOKEN;
 
 @RestController
-@RequestMapping(path = "/login")
 public class SignInController {
 
     private static final String STATUS_OK = "Successfully signed in!";
@@ -34,6 +35,7 @@ public class SignInController {
             "To activate your account, visit this link: \n" +
             ACTIVATION_URL + "%s";
     private static final String ACCOUNT_ACTIVATION = "Account activation";
+    private static final String NOT_LOGGED_IN = "You don't have been logged in!";
 
 
     private SignInService signInService;
@@ -53,79 +55,84 @@ public class SignInController {
     }
 
 
-    @PostMapping
-    public String signIn(String email, String hashedPassword,
-                         HttpServletRequest req, HttpServletResponse resp) {
+    @PostMapping(path = "/login")
+    public Object signIn(String email, String hashedPassword,
+                         HttpServletResponse resp) {
         String msg;
+
+        boolean isSuccessful = true;
 
         try {
             Customer customer = signInService.logIn(email, hashedPassword);
 
 
             if (customer != null) {
-                if (customer.getActivationCode() == null) {
-                    msg = STATUS_OK;
+                msg = STATUS_OK;
 
-                    String token = securityHelper.generateTempToken();
+                String token = securityHelper.generateTempToken();
 
-                    customer.setTempToken(token);
-                    customerRepository.save(customer);
+                customer.setTempToken(token);
+                customerRepository.save(customer);
 
-                    Cookie tokenCookie = new Cookie(TOKEN, token);
-                    tokenCookie.setMaxAge(EXPIRATION_TIME);
-                    resp.addCookie(tokenCookie);
-                } else {
-                    msg = STATUS_TO_BE_ACTIVATED;
-                    String message = String.format(MESSAGE_TO_USER,
-                            customer.getFirstName(), customer.getActivationCode());
+                Cookie tokenCookie = new Cookie(TOKEN, token);
+                tokenCookie.setMaxAge(EXPIRATION_TIME);
+                resp.addCookie(tokenCookie);
 
-                    mailSender.send(customer.getEmail(), ACCOUNT_ACTIVATION, message);
-                }
             } else {
                 msg = STATUS_BAD;
+                isSuccessful = false;
             }
         } catch (ServiceException e) {
             //TODO: Log !
             msg = e.getMessage();
+            isSuccessful = false;
         }
 
+        PositiveResponse positiveResponse = new PositiveResponse(isSuccessful);
+        ErrorResponse errorResponse = new ErrorResponse(isSuccessful, msg);
 
-        return msg;
+        return isSuccessful ? positiveResponse : errorResponse;
     }
 
-    @PostMapping(path = "/logout")
-    public String logOut(HttpServletRequest req, HttpServletResponse resp) {
+    @RequestMapping(path = "/logout")
+    public Object logOut(HttpServletRequest req, HttpServletResponse resp) {
         Cookie[] cookies = req.getCookies();
 
         String message = LOG_OUT_STATUS_OK;
+        boolean isSuccessful = true;
 
-        if ((cookies != null) && (cookies.length > 0)) {
-
-            for (Cookie cookie : cookies) {
-
-                if (cookie.getName().equals(TOKEN)) {
-
-                    message = doLogOut(resp, message, cookie);
-                }
-            }
-        }
-
-        return message;
-    }
-
-    private String doLogOut(HttpServletResponse resp, String message, Cookie cookie) {
         try {
-            signInService.logOut(cookie.getValue());
+            if ((cookies != null) && (cookies.length > 0)) {
 
-            cookie.setValue(EMPTY_VALUE);
-            cookie.setPath(EMPTY_PATH);
-            cookie.setMaxAge(EXPIRATION_TIME_NOW);
+                for (Cookie cookie : cookies) {
 
-            resp.addCookie(cookie);
-
+                    if (cookie.getName().equals(TOKEN)) {
+                        doLogOut(resp, cookie);
+                    }
+                }
+            } else {
+                isSuccessful = false;
+                message = NOT_LOGGED_IN;
+            }
         } catch (ServiceException e) {
+            isSuccessful = false;
             message = e.getMessage();
         }
-        return message;
+
+        PositiveResponse positiveResponse = new PositiveResponse(isSuccessful);
+        ErrorResponse errorResponse = new ErrorResponse(isSuccessful, message);
+
+        return isSuccessful ? positiveResponse : errorResponse;
+    }
+
+    private void doLogOut(HttpServletResponse resp, Cookie cookie) throws ServiceException {
+
+        signInService.logOut(cookie.getValue());
+
+        cookie.setValue(EMPTY_VALUE);
+        cookie.setPath(EMPTY_PATH);
+        cookie.setMaxAge(EXPIRATION_TIME_NOW);
+
+        resp.addCookie(cookie);
     }
 }

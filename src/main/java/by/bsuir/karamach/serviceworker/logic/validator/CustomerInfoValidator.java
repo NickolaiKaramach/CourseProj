@@ -1,6 +1,6 @@
 package by.bsuir.karamach.serviceworker.logic.validator;
 
-import by.bsuir.karamach.serviceworker.entity.Customer;
+import by.bsuir.karamach.serviceworker.entity.RegistrationRequest;
 
 import java.util.Calendar;
 
@@ -30,7 +30,7 @@ public class CustomerInfoValidator {
         return (MIN_BIRTH_YEAR < year) && (year <= calendar.get(Calendar.YEAR));
     }
 
-    public static boolean isValidCustomer(Customer customer) {
+    public static boolean isValidCustomerData(RegistrationRequest customer) {
         if (customer != null) {
             String email = customer.getEmail();
 

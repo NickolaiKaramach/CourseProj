@@ -41,7 +41,11 @@ public class SignInService implements AuthorizationService {
     public void logOut(String tempToken) throws ServiceException {
         Customer customer = customerRepository.findByTempToken(tempToken);
 
-        customer.setTempToken(EXPIRED_TEMP_TOKEN_FLAG);
-        customerRepository.save(customer);
+        if (customer != null) {
+            customer.setTempToken(EXPIRED_TEMP_TOKEN_FLAG);
+            customerRepository.save(customer);
+        } else {
+            throw new ServiceException("Could not find current session!");
+        }
     }
 }

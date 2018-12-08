@@ -30,15 +30,6 @@ public class Customer {
 
     private String tempToken;
 
-    private String activationCode;
-
-    public String getActivationCode() {
-        return activationCode;
-    }
-
-    public void setActivationCode(String activationCode) {
-        this.activationCode = activationCode;
-    }
 
     public Integer getId() {
         return id;

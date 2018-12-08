@@ -7,10 +7,12 @@ import java.util.Set;
 @Entity
 @Table(name = "subjects")
 public class Subject {
-    private String name;
+
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private int id;
+
+    private String name;
 
     @ManyToMany(fetch = FetchType.LAZY,
             cascade = {

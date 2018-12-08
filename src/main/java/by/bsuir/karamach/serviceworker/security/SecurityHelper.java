@@ -23,4 +23,8 @@ public class SecurityHelper {
     public String generateActivationCode() {
         return UUID.randomUUID().toString();
     }
+
+    public String generatePublicId() {
+        return UUID.randomUUID().toString();
+    }
 }

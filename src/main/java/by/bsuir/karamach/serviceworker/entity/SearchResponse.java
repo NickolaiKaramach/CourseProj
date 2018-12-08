@@ -5,12 +5,15 @@ import java.util.List;
 public class SearchResponse {
     private List<Trainer> trainersFound;
     private String message;
-    private int pageNum;
+    private int page;
+    private int totalCount;
 
-    public SearchResponse(List<Trainer> trainersFound, String message, int pageNum) {
+
+    public SearchResponse(List<Trainer> trainersFound, String message, int page, int totalCount) {
         this.trainersFound = trainersFound;
         this.message = message;
-        this.pageNum = pageNum;
+        this.page = page;
+        this.totalCount = totalCount;
     }
 
     public SearchResponse() {
@@ -32,11 +35,19 @@ public class SearchResponse {
         this.message = message;
     }
 
-    public int getPageNum() {
-        return pageNum;
+    public int getPage() {
+        return page;
     }
 
-    public void setPageNum(int pageNum) {
-        this.pageNum = pageNum;
+    public void setPage(int page) {
+        this.page = page;
+    }
+
+    public int getTotalCount() {
+        return totalCount;
+    }
+
+    public void setTotalCount(int totalCount) {
+        this.totalCount = totalCount;
     }
 }
