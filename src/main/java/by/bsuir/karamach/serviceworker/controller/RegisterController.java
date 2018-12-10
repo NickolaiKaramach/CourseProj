@@ -32,12 +32,13 @@ public class RegisterController {
         this.securityHelper = securityHelper;
     }
 
-    @GetMapping(path = "/activate/{code}")
-    public Object activate(@PathVariable String code, @RequestBody PublicIdObject idObject) {
+    @GetMapping(path = "/activate")
+    public Object activate(@RequestBody ActivationDetails activationDetails) {
 
         String message = null;
 
-        String publicId = idObject.publicId;
+        String publicId = activationDetails.publicId;
+        String code = activationDetails.code;
         try {
             registerService.activateUser(code, publicId);
         } catch (ServiceException e) {
@@ -64,33 +65,17 @@ public class RegisterController {
         }
 
 
-        Object positiveResponse = new RegistrationRequestResponse(isSuccessfully, registrationRequest.getGeneratedPublicId());
+        String generatedPublicId = registrationRequest.getGeneratedPublicId();
+
+        Object positiveResponse = new RegistrationRequestResponse(isSuccessfully, generatedPublicId);
         Object errorResponse = new ErrorResponse(isSuccessfully, message);
 
         return isSuccessfully ? positiveResponse : errorResponse;
     }
 
-    public static final class PublicIdObject {
+    public static final class ActivationDetails {
         public String publicId;
+        public String code;
     }
 
-    private RegistrationRequest getRegistrationRequestFromData
-            (String email, String hashedPassword, String lastName,
-             String firstName, boolean isFemale, int birthYear) {
-
-        RegistrationRequest registrationRequest = new RegistrationRequest();
-
-        registrationRequest.setEmail(email);
-        registrationRequest.setHashedPass(hashedPassword);
-
-        registrationRequest.setLastName(lastName);
-        registrationRequest.setFirstName(firstName);
-        registrationRequest.setFemale(isFemale);
-        registrationRequest.setBirthYear(birthYear);
-
-        registrationRequest.setActivationCode(securityHelper.generateActivationCode());
-        registrationRequest.setGeneratedPublicId(securityHelper.generatePublicId());
-
-        return registrationRequest;
-    }
 }

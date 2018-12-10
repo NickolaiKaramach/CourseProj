@@ -80,16 +80,22 @@ public class RegisterService implements UserCreationService {
     public void createRegistrationRequest(RegistrationRequest registrationRequest) throws ServiceException {
         if (CustomerInfoValidator.isValidCustomerData(registrationRequest)) {
 
-            Customer alreadyRegisteredCustomer = customerRepository.findByEmail(registrationRequest.getEmail());
+            String email = registrationRequest.getEmail();
 
-            if (alreadyRegisteredCustomer == null) {
+            Customer alreadyRegisteredCustomer = customerRepository.findByEmail(email);
+            RegistrationRequest alreadyExistingRequest = requestRepository.findByEmail(email);
+
+            if ((alreadyRegisteredCustomer == null) && (alreadyExistingRequest == null)) {
+
+                registrationRequest.setActivationCode(securityHelper.generateActivationCode());
+                registrationRequest.setGeneratedPublicId(securityHelper.generatePublicId());
 
                 requestRepository.save(registrationRequest);
 
                 String message = String.format(MESSAGE_TO_USER,
                         registrationRequest.getFirstName(), registrationRequest.getActivationCode());
 
-                sender.send(registrationRequest.getEmail(), ACCOUNT_ACTIVATION, message);
+                sender.send(email, ACCOUNT_ACTIVATION, message);
 
             } else {
                 throw new ServiceException("Email is already taken!");

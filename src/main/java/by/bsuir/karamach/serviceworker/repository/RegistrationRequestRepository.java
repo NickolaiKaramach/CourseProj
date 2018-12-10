@@ -5,4 +5,6 @@ import org.springframework.data.repository.CrudRepository;
 
 public interface RegistrationRequestRepository extends CrudRepository<RegistrationRequest, Integer> {
     RegistrationRequest findByActivationCode(String activationCode);
+
+    RegistrationRequest findByEmail(String email);
 }

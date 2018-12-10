@@ -5,7 +5,6 @@ import by.bsuir.karamach.serviceworker.entity.ErrorResponse;
 import by.bsuir.karamach.serviceworker.entity.LoginInfo;
 import by.bsuir.karamach.serviceworker.entity.PositiveResponse;
 import by.bsuir.karamach.serviceworker.logic.ServiceException;
-import by.bsuir.karamach.serviceworker.logic.impl.MailSender;
 import by.bsuir.karamach.serviceworker.logic.impl.SignInService;
 import by.bsuir.karamach.serviceworker.repository.CustomerRepository;
 import by.bsuir.karamach.serviceworker.security.SecurityHelper;
@@ -30,13 +29,6 @@ public class SignInController {
     private static final String EMPTY_VALUE = "";
     private static final String EMPTY_PATH = "/";
     private static final String LOG_OUT_STATUS_OK = "Successfully logged out!";
-    private static final String STATUS_TO_BE_ACTIVATED = "Please activate ur account first, one more message will be sent!";
-    private static final String ACTIVATION_URL = "http://localhost:8080/activate/";
-    private static final String MESSAGE_TO_USER = "   Hello, %s! \n" +
-            "Welcome to our platform, \n" +
-            "To activate your account, visit this link: \n" +
-            ACTIVATION_URL + "%s";
-    private static final String ACCOUNT_ACTIVATION = "Account activation";
     private static final String NOT_LOGGED_IN = "You don't have been logged in!";
 
 
@@ -46,14 +38,42 @@ public class SignInController {
 
     private SecurityHelper securityHelper;
 
-    private MailSender mailSender;
 
     public SignInController(SignInService signInService, CustomerRepository customerRepository,
-                            SecurityHelper securityHelper, MailSender mailSender) {
+                            SecurityHelper securityHelper) {
         this.signInService = signInService;
         this.customerRepository = customerRepository;
         this.securityHelper = securityHelper;
-        this.mailSender = mailSender;
+    }
+
+
+    public static final class LoginResponse {
+        boolean isSuccessful;
+        String token;
+
+        public LoginResponse() {
+        }
+
+        public LoginResponse(boolean isSuccessful, String token) {
+            this.isSuccessful = isSuccessful;
+            this.token = token;
+        }
+
+        public boolean isSuccessful() {
+            return isSuccessful;
+        }
+
+        public void setSuccessful(boolean successful) {
+            isSuccessful = successful;
+        }
+
+        public String getToken() {
+            return token;
+        }
+
+        public void setToken(String token) {
+            this.token = token;
+        }
     }
 
 
@@ -99,35 +119,6 @@ public class SignInController {
         ErrorResponse errorResponse = new ErrorResponse(isSuccessful, msg);
 
         return isSuccessful ? new LoginResponse(isSuccessful, token) : errorResponse;
-    }
-
-    public static final class LoginResponse {
-        boolean isSuccessful;
-        String token;
-
-        public LoginResponse() {
-        }
-
-        public LoginResponse(boolean isSuccessful, String token) {
-            this.isSuccessful = isSuccessful;
-            this.token = token;
-        }
-
-        public boolean isSuccessful() {
-            return isSuccessful;
-        }
-
-        public void setSuccessful(boolean successful) {
-            isSuccessful = successful;
-        }
-
-        public String getToken() {
-            return token;
-        }
-
-        public void setToken(String token) {
-            this.token = token;
-        }
     }
 
     @RequestMapping(path = "/logout")
