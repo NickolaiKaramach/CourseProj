@@ -32,7 +32,7 @@ public class RegisterController {
         this.securityHelper = securityHelper;
     }
 
-    @GetMapping(path = "/activate")
+    @PostMapping(path = "/activate")
     public Object activate(@RequestBody ActivationDetails activationDetails) {
 
         String message = null;

@@ -8,6 +8,8 @@ import java.util.UUID;
 @Component
 public class SecurityHelper {
     private static final int TOKEN_LENGTH = 20;
+    public static final int MIN_RANGE = 100000;
+    public static final int MAX_RANGE = 999999;
 
 
     private SecureRandom random = new SecureRandom();
@@ -21,7 +23,9 @@ public class SecurityHelper {
     }
 
     public String generateActivationCode() {
-        return UUID.randomUUID().toString();
+        int result = MIN_RANGE + (int) (Math.random() * MAX_RANGE);
+
+        return String.valueOf(result);
     }
 
     public String generatePublicId() {

@@ -16,11 +16,11 @@ import java.util.Collections;
 @Service
 public class RegisterService implements UserCreationService {
 
-    private static final String ACTIVATION_URL = "http://localhost:8080/activate?publicId=%s&code=%s";
+
     private static final String MESSAGE_TO_USER = "   Hello, %s! \n" +
             "Welcome to our platform, \n" +
-            "To activate your account, visit this link: \n" +
-            ACTIVATION_URL;
+            "To activate your account, use this code: \n" +
+            "%s";
     private static final String ACCOUNT_ACTIVATION = "Account activation";
 
     private SecurityHelper securityHelper;
@@ -93,7 +93,7 @@ public class RegisterService implements UserCreationService {
                 requestRepository.save(registrationRequest);
 
                 String message = String.format(MESSAGE_TO_USER,
-                        registrationRequest.getFirstName(), registrationRequest.getGeneratedPublicId(), registrationRequest.getActivationCode());
+                        registrationRequest.getFirstName(), registrationRequest.getActivationCode());
 
                 sender.send(email, ACCOUNT_ACTIVATION, message);
 
