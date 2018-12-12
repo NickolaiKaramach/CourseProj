@@ -14,6 +14,14 @@ public class Subject {
 
     private String name;
 
+    private boolean isUsed;
+
+    public Subject(String name, boolean isUsed, Set<Trainer> trainers) {
+        this.name = name;
+        this.isUsed = isUsed;
+        this.trainers = trainers;
+    }
+
     @ManyToMany(fetch = FetchType.LAZY,
             cascade = {
                     CascadeType.PERSIST,
@@ -25,10 +33,12 @@ public class Subject {
     public Subject() {
     }
 
-    public Subject(String name, int id, Set<Trainer> trainers) {
-        this.name = name;
-        this.id = id;
-        this.trainers = trainers;
+    public boolean isUsed() {
+        return isUsed;
+    }
+
+    public void setUsed(boolean used) {
+        isUsed = used;
     }
 
     public Set<Trainer> getTrainers() {

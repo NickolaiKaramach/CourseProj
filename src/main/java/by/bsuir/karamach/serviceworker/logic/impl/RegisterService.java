@@ -40,8 +40,10 @@ public class RegisterService implements UserCreationService {
     }
 
     @Override
-    public void activateUser(String code, String publicId) throws ServiceException {
+    public Customer activateUser(String code, String publicId) throws ServiceException {
         RegistrationRequest registrationRequest = requestRepository.findByActivationCode(code);
+
+        Customer customer = null;
 
         if (registrationRequest != null) {
             boolean isRealUser = registrationRequest.getGeneratedPublicId().equals(publicId);
@@ -49,7 +51,7 @@ public class RegisterService implements UserCreationService {
             if (isRealUser) {
                 requestRepository.delete(registrationRequest);
 
-                Customer customer = getCustomerFromRegistrationRequest(registrationRequest);
+                customer = getCustomerFromRegistrationRequest(registrationRequest);
 
                 customerRepository.save(customer);
             } else {
@@ -58,6 +60,8 @@ public class RegisterService implements UserCreationService {
         } else {
             throw new ServiceException("No such user activation code");
         }
+
+        return customer;
     }
 
     private Customer getCustomerFromRegistrationRequest(RegistrationRequest registrationRequest) {

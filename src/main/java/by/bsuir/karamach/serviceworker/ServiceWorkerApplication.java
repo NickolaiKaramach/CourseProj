@@ -1,5 +1,11 @@
 package by.bsuir.karamach.serviceworker;
 
+import by.bsuir.karamach.serviceworker.entity.CustomerDetails;
+import com.auth0.jwt.JWT;
+import com.auth0.jwt.JWTVerifier;
+import com.auth0.jwt.algorithms.Algorithm;
+import com.auth0.jwt.exceptions.JWTVerificationException;
+import com.auth0.jwt.interfaces.DecodedJWT;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.http.HttpStatus;
@@ -15,7 +21,6 @@ import org.springframework.security.config.annotation.web.configuration.WebSecur
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
-import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.web.RedirectStrategy;
@@ -28,16 +33,19 @@ import org.springframework.security.web.util.matcher.NegatedRequestMatcher;
 import org.springframework.security.web.util.matcher.OrRequestMatcher;
 import org.springframework.security.web.util.matcher.RequestMatcher;
 
-import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.io.IOException;
-import java.util.Collection;
 
 @SpringBootApplication
 @EnableWebSecurity
 @EnableGlobalMethodSecurity(prePostEnabled = true)
+
 public class ServiceWorkerApplication extends WebSecurityConfigurerAdapter {
+    private static final Algorithm algorithm = Algorithm.HMAC256("secret-key");
+    private static final JWTVerifier verifier = JWT.require(algorithm)
+            .withIssuer("myauth10")
+            .build();
+
     private static final RequestMatcher PUBLIC_URLS = new OrRequestMatcher(
             new AntPathRequestMatcher("/login**"),
             new AntPathRequestMatcher("/error**"),
@@ -45,6 +53,7 @@ public class ServiceWorkerApplication extends WebSecurityConfigurerAdapter {
             new AntPathRequestMatcher("/search**"),
             new AntPathRequestMatcher("/activate")
     );
+
     private static final RequestMatcher PROTECTED_URLS = new NegatedRequestMatcher(PUBLIC_URLS);
     private MyTokenProvider myAuthProvider = new MyTokenProvider();
 
@@ -126,47 +135,35 @@ public class ServiceWorkerApplication extends WebSecurityConfigurerAdapter {
 
         @Override
         protected UserDetails retrieveUser(String username, UsernamePasswordAuthenticationToken authentication) throws AuthenticationException {
-            Object token = authentication.getCredentials();
-            if (token instanceof String) {
+            Object tokenObject = authentication.getCredentials();
+
+            if (tokenObject instanceof String) {
                 //UserService.findByToken
-                return new UserDetails() {
-                    @Override
-                    public Collection<? extends GrantedAuthority> getAuthorities() {
-                        return null;
-                    }
+                String token = (String) tokenObject;
 
-                    @Override
-                    public String getPassword() {
-                        return (String) token;
-                    }
+                DecodedJWT decodedJwtToken;
 
-                    @Override
-                    public String getUsername() {
-                        return (String) token;
-                    }
+                try {
+                    decodedJwtToken = verifier.verify(token);
 
-                    @Override
-                    public boolean isAccountNonExpired() {
-                        return true;
-                    }
+                } catch (JWTVerificationException e) {
 
-                    @Override
-                    public boolean isAccountNonLocked() {
-                        return true;
-                    }
+                    System.out.println("ERROR");
+                    //TODO: LOG !
+                    throw new UsernameNotFoundException("Cannot retrieve data from token");
 
-                    @Override
-                    public boolean isCredentialsNonExpired() {
-                        return true;
-                    }
+                }
 
-                    @Override
-                    public boolean isEnabled() {
-                        return true;
-                    }
-                };
+                String email;
+                String password;
+
+                email = decodedJwtToken.getClaim("email").asString();
+                password = decodedJwtToken.getClaim("password").asString();
+
+                return new CustomerDetails(email, password);
             }
-            throw new UsernameNotFoundException("Cannot find user with authentication token=" + token);
+
+            throw new UsernameNotFoundException("Cannot find user with authentication token=" + tokenObject);
         }
     }
 

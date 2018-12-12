@@ -1,22 +1,21 @@
 package by.bsuir.karamach.serviceworker.controller;
 
-import by.bsuir.karamach.serviceworker.entity.ErrorResponse;
-import by.bsuir.karamach.serviceworker.entity.PositiveResponse;
-import by.bsuir.karamach.serviceworker.entity.RegistrationRequest;
-import by.bsuir.karamach.serviceworker.entity.RegistrationRequestResponse;
+import by.bsuir.karamach.serviceworker.entity.*;
 import by.bsuir.karamach.serviceworker.logic.ServiceException;
 import by.bsuir.karamach.serviceworker.logic.impl.RegisterService;
 import by.bsuir.karamach.serviceworker.repository.CustomerRepository;
 import by.bsuir.karamach.serviceworker.security.SecurityHelper;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RestController;
+
+import java.util.HashMap;
+import java.util.Map;
 
 @RestController
 public class RegisterController {
 
     private static final String REGISTER_STATUS_OK = "Successfully registered new student!";
-    private static final int EXPIRATION_TIME = 5400;
-    private static final String ACTIVATE_STATUS_OK = "Successfully activated!";
-    private static final String ACTIVATE_STATUS_BAD = "Couldn't find activate code";
     private static final boolean IS_SUCCESSFUL = true;
     private static final boolean IS_NOT_SUCCESSFUL = false;
     private RegisterService registerService;
@@ -39,16 +38,34 @@ public class RegisterController {
 
         String publicId = activationDetails.publicId;
         String code = activationDetails.code;
+
+        Customer customer = null;
+
         try {
-            registerService.activateUser(code, publicId);
+            customer = registerService.activateUser(code, publicId);
         } catch (ServiceException e) {
             message = e.getMessage();
         }
 
-        PositiveResponse positiveResponse = new PositiveResponse(IS_SUCCESSFUL);
-        ErrorResponse errorResponse = new ErrorResponse(IS_NOT_SUCCESSFUL, message);
+        Object response;
 
-        return (message == null) ? positiveResponse : errorResponse;
+        if (customer != null) {
+            Map<String, String> tokenValues = new HashMap<>();
+
+            tokenValues.put("email", customer.getEmail());
+            tokenValues.put("password", customer.getHashedPass());
+
+            String jwtToken = securityHelper.generateJWTToken(tokenValues);
+            customer.setTempToken(jwtToken);
+            customerRepository.save(customer);
+
+            response = new LogInResponse(IS_SUCCESSFUL, jwtToken, customer);
+        } else {
+            response = new ErrorResponse(IS_NOT_SUCCESSFUL, message);
+        }
+
+
+        return response;
     }
 
     @PostMapping(path = "/register/customer")

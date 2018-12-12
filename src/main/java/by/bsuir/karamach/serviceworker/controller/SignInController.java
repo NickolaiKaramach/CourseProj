@@ -1,9 +1,6 @@
 package by.bsuir.karamach.serviceworker.controller;
 
-import by.bsuir.karamach.serviceworker.entity.Customer;
-import by.bsuir.karamach.serviceworker.entity.ErrorResponse;
-import by.bsuir.karamach.serviceworker.entity.LoginInfo;
-import by.bsuir.karamach.serviceworker.entity.PositiveResponse;
+import by.bsuir.karamach.serviceworker.entity.*;
 import by.bsuir.karamach.serviceworker.logic.ServiceException;
 import by.bsuir.karamach.serviceworker.logic.impl.SignInService;
 import by.bsuir.karamach.serviceworker.repository.CustomerRepository;
@@ -16,6 +13,8 @@ import org.springframework.web.bind.annotation.RestController;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.util.HashMap;
+import java.util.Map;
 
 import static by.bsuir.karamach.serviceworker.controller.CookieParameterName.TOKEN;
 
@@ -24,7 +23,6 @@ public class SignInController {
 
     private static final String STATUS_OK = "Successfully signed in!";
     private static final String STATUS_BAD = "Invalid combination of email and password!";
-    private static final int EXPIRATION_TIME = 5400;
     private static final int EXPIRATION_TIME_NOW = 0;
     private static final String EMPTY_VALUE = "";
     private static final String EMPTY_PATH = "/";
@@ -47,64 +45,36 @@ public class SignInController {
     }
 
 
-    public static final class LoginResponse {
-        boolean isSuccessful;
-        String token;
-
-        public LoginResponse() {
-        }
-
-        public LoginResponse(boolean isSuccessful, String token) {
-            this.isSuccessful = isSuccessful;
-            this.token = token;
-        }
-
-        public boolean isSuccessful() {
-            return isSuccessful;
-        }
-
-        public void setSuccessful(boolean successful) {
-            isSuccessful = successful;
-        }
-
-        public String getToken() {
-            return token;
-        }
-
-        public void setToken(String token) {
-            this.token = token;
-        }
-    }
-
-
 
     @PostMapping(path = "/login")
-    public Object signIn(@RequestBody LoginInfo loginInfo,
-                         HttpServletResponse resp) {
+    public Object signIn(@RequestBody LoginInfo loginInfo) {
         String msg;
-        String token = null;
+        String jwtToken = null;
 
         String email = loginInfo.getEmail();
         String hashedPassword = loginInfo.getHashedPassword();
 
+        Customer customer = null;
+
         boolean isSuccessful = true;
 
         try {
-            Customer customer = signInService.logIn(email, hashedPassword);
+            customer = signInService.logIn(email, hashedPassword);
 
 
             if (customer != null) {
                 msg = STATUS_OK;
 
-                String generateTempToken = securityHelper.generateTempToken();
-                token = customer.getTempToken();
 
-                customer.setTempToken(generateTempToken);
+                Map<String, String> tokenValues = new HashMap<>();
+
+                tokenValues.put("email", customer.getEmail());
+                tokenValues.put("password", customer.getHashedPass());
+
+                jwtToken = securityHelper.generateJWTToken(tokenValues);
+
+                customer.setTempToken(jwtToken);
                 customerRepository.save(customer);
-
-                Cookie tokenCookie = new Cookie(TOKEN, generateTempToken);
-                tokenCookie.setMaxAge(EXPIRATION_TIME);
-                resp.addCookie(tokenCookie);
 
             } else {
                 msg = STATUS_BAD;
@@ -118,7 +88,7 @@ public class SignInController {
 
         ErrorResponse errorResponse = new ErrorResponse(isSuccessful, msg);
 
-        return isSuccessful ? new LoginResponse(isSuccessful, token) : errorResponse;
+        return isSuccessful ? new LogInResponse(isSuccessful, jwtToken, customer) : errorResponse;
     }
 
     @RequestMapping(path = "/logout")

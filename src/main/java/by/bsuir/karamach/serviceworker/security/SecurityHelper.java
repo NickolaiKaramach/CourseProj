@@ -1,8 +1,12 @@
 package by.bsuir.karamach.serviceworker.security;
 
+import com.auth0.jwt.JWT;
+import com.auth0.jwt.JWTCreator;
+import com.auth0.jwt.algorithms.Algorithm;
 import org.springframework.stereotype.Component;
 
 import java.security.SecureRandom;
+import java.util.Map;
 import java.util.UUID;
 
 @Component
@@ -13,6 +17,7 @@ public class SecurityHelper {
 
 
     private SecureRandom random = new SecureRandom();
+    private Algorithm algorithm = Algorithm.HMAC256("secret-key");
 
     public String generateTempToken() {
         byte bytes[] = new byte[TOKEN_LENGTH];
@@ -31,4 +36,22 @@ public class SecurityHelper {
     public String generatePublicId() {
         return UUID.randomUUID().toString();
     }
+
+    public String generateJWTToken(Map<String, String> values) {
+
+        JWTCreator.Builder jwtToken = JWT.create().withIssuer("myauth10");
+
+
+        for (Map.Entry<String, String> param : values.entrySet()) {
+
+            jwtToken = jwtToken.withClaim(param.getKey(), param.getValue());
+
+        }
+
+
+        String token = jwtToken.sign(algorithm);
+
+        return token;
+    }
+
 }
