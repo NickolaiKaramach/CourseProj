@@ -14,4 +14,6 @@ public interface TrainerRepository extends PagingAndSortingRepository<Trainer, I
     List<Trainer> getTrainersByActiveIsTrueAndSubjectEquals(Subject subject, Pageable pageable);
 
     int countAllByActiveIsTrueAndSubjectContains(Subject subject);
+
+    Integer countAllByActiveIsTrue();
 }

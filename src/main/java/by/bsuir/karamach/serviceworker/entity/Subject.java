@@ -14,11 +14,11 @@ public class Subject {
 
     private String name;
 
-    private boolean isUsed;
+    private boolean used;
 
-    public Subject(String name, boolean isUsed, Set<Trainer> trainers) {
+    public Subject(String name, boolean used, Set<Trainer> trainers) {
         this.name = name;
-        this.isUsed = isUsed;
+        this.used = used;
         this.trainers = trainers;
     }
 
@@ -34,11 +34,11 @@ public class Subject {
     }
 
     public boolean isUsed() {
-        return isUsed;
+        return used;
     }
 
     public void setUsed(boolean used) {
-        isUsed = used;
+        this.used = used;
     }
 
     public Set<Trainer> getTrainers() {
