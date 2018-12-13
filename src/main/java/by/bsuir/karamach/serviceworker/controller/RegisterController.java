@@ -31,8 +31,8 @@ public class RegisterController {
 
         String message = null;
 
-        String publicId = activationDetails.publicId;
-        String code = activationDetails.code;
+        String publicId = activationDetails.getPublicId();
+        String code = activationDetails.getCode();
 
         Customer customer = null;
 
@@ -83,6 +83,22 @@ public class RegisterController {
     public static final class ActivationDetails {
         String publicId;
         String code;
+
+        public String getPublicId() {
+            return publicId;
+        }
+
+        public void setPublicId(String publicId) {
+            this.publicId = publicId;
+        }
+
+        public String getCode() {
+            return code;
+        }
+
+        public void setCode(String code) {
+            this.code = code;
+        }
     }
 
 }

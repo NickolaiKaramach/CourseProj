@@ -10,6 +10,7 @@ import by.bsuir.karamach.serviceworker.repository.CustomerRepository;
 import by.bsuir.karamach.serviceworker.repository.RegistrationRequestRepository;
 import by.bsuir.karamach.serviceworker.security.SecurityHelper;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.HashSet;
 
@@ -17,10 +18,22 @@ import java.util.HashSet;
 public class RegisterService implements UserCreationService {
 
 
-    private static final String MESSAGE_TO_USER = "   Hello, %s! \n" +
-            "Welcome to our platform, \n" +
-            "To activate your account, use this code: \n" +
-            "%s";
+    private static final String MESSAGE_TO_USER =
+            "<div><h1>" +
+                    "\tHello, %s!" +
+                    "</h1></div>\n" +
+
+                    "<h2><div>" +
+                    "Welcome to our platform! \n<br>" +
+                    "To activate your account, use this code: \n" +
+                    "</div></h2>" +
+
+                    "<h1>%s</h1>\n\n" +
+
+                    "<h2><i>" +
+                    "Or use this activation link: \n" +
+                    "<a href =\"http://localhost:8081/activate?publicId=%s&code=%s\">Activation link</a>" +
+                    "</i></h2>";
     private static final String ACCOUNT_ACTIVATION = "Account activation";
 
     private SecurityHelper securityHelper;
@@ -39,6 +52,7 @@ public class RegisterService implements UserCreationService {
         this.sender = sender;
     }
 
+    @Transactional
     @Override
     public Customer activateUser(String code, String publicId) throws ServiceException {
         RegistrationRequest registrationRequest = requestRepository.findByActivationCode(code);
@@ -84,6 +98,7 @@ public class RegisterService implements UserCreationService {
         return customer;
     }
 
+    @Transactional
     @Override
     public void createRegistrationRequest(RegistrationRequest registrationRequest) throws ServiceException {
         if (CustomerInfoValidator.isValidCustomerData(registrationRequest)) {
@@ -101,7 +116,8 @@ public class RegisterService implements UserCreationService {
                 requestRepository.save(registrationRequest);
 
                 String message = String.format(MESSAGE_TO_USER,
-                        registrationRequest.getFirstName(), registrationRequest.getActivationCode());
+                        registrationRequest.getFirstName(), registrationRequest.getActivationCode(),
+                        registrationRequest.getGeneratedPublicId(), registrationRequest.getActivationCode());
 
                 sender.send(email, ACCOUNT_ACTIVATION, message);
 
