@@ -1,5 +1,7 @@
 package by.bsuir.karamach.serviceworker.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import javax.persistence.*;
 import java.util.HashSet;
 import java.util.Set;
@@ -28,6 +30,8 @@ public class Subject {
                     CascadeType.MERGE
             },
             mappedBy = "subject")
+
+    @JsonIgnore
     private Set<Trainer> trainers = new HashSet<>();
 
     public Subject() {

@@ -3,13 +3,15 @@ package by.bsuir.karamach.serviceworker.entity;
 import java.util.List;
 
 public class SearchResponse {
+    private boolean isSuccessful;
     private List<Trainer> trainersFound;
     private String message;
     private int page;
     private int totalCount;
 
 
-    public SearchResponse(List<Trainer> trainersFound, String message, int page, int totalCount) {
+    public SearchResponse(boolean isSuccessful, List<Trainer> trainersFound, String message, int page, int totalCount) {
+        this.isSuccessful = isSuccessful;
         this.trainersFound = trainersFound;
         this.message = message;
         this.page = page;
@@ -49,5 +51,13 @@ public class SearchResponse {
 
     public void setTotalCount(int totalCount) {
         this.totalCount = totalCount;
+    }
+
+    public boolean isSuccessful() {
+        return isSuccessful;
+    }
+
+    public void setSuccessful(boolean successful) {
+        isSuccessful = successful;
     }
 }

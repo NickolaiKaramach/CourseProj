@@ -1,5 +1,6 @@
 package by.bsuir.karamach.serviceworker.logic.impl;
 
+import by.bsuir.karamach.serviceworker.entity.Customer;
 import by.bsuir.karamach.serviceworker.entity.SearchResponse;
 import by.bsuir.karamach.serviceworker.entity.Subject;
 import by.bsuir.karamach.serviceworker.entity.Trainer;
@@ -10,6 +11,7 @@ import by.bsuir.karamach.serviceworker.repository.TrainerRepository;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -35,32 +37,53 @@ public class SearchService {
         isValidPage = SearchTextValidator.isValidPageNum(page);
         isValidText = SearchTextValidator.isValidTextForSearch(searchingText);
 
-        List<Trainer> trainers = null;
-        int totalCount;
+        SearchResponse searchResponse = null;
+
+        List<Trainer> trainers = new ArrayList<>();
+        int totalCount = 0;
+
+        boolean isValidData = isValidText && isValidPage;
+        if (!isValidData) {
+            throw new ServiceException("Некорректные данные!");
+        }
 
         Subject subject = subjectRepository.findByNameContains(searchingText);
 
-        if ((subject != null) && (isValidText && isValidPage)) {
-            totalCount = trainerRepository.countAllByActiveIsTrueAndSubjectContains(subject);
+        if (subject != null) {
 
-            boolean isNotNullResult;
-            isNotNullResult = (totalCount >= 0);
 
-            if (isNotNullResult) {
-                trainers =
-                        trainerRepository.getTrainersByActiveIsTrueAndSubjectEquals
-                                (subject, PageRequest.of(page, PAGE_SIZE));
-            }
+            totalCount = subject.getTrainers().size();
+
+            trainers =
+                    trainerRepository.getTrainersByActiveIsTrueAndSubjectEquals
+                            (subject, PageRequest.of(page, PAGE_SIZE));
+
+
         } else {
-            throw new ServiceException("Invalid data to search!");
+            List<Trainer> tempTrainers = trainerRepository.findAllByActiveIsTrue();
+
+            for (Trainer trainer : tempTrainers) {
+
+                Customer customerData = trainer.getCustomer();
+
+                String lastName = customerData.getLastName().toUpperCase();
+                String firstName = customerData.getFirstName().toUpperCase();
+
+                if ((lastName.contains(searchingText)) || (firstName.contains(searchingText))) {
+                    if ((totalCount < PAGE_SIZE * (page + 1)) && (PAGE_SIZE * page <= totalCount)) {
+                        trainers.add(trainer);
+                    }
+                    totalCount++;
+                }
+            }
         }
 
-
-        SearchResponse searchResponse = new SearchResponse();
+        searchResponse = new SearchResponse();
         searchResponse.setTrainersFound(trainers);
         searchResponse.setPage(page);
 
         searchResponse.setTotalCount(totalCount);
+
         return searchResponse;
     }
 }

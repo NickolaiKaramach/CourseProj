@@ -1,10 +1,14 @@
 package by.bsuir.karamach.serviceworker.controller;
 
+import by.bsuir.karamach.serviceworker.entity.ErrorResponse;
 import by.bsuir.karamach.serviceworker.entity.SearchResponse;
 import by.bsuir.karamach.serviceworker.entity.Trainer;
 import by.bsuir.karamach.serviceworker.logic.ServiceException;
 import by.bsuir.karamach.serviceworker.logic.impl.SearchService;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
 
@@ -21,41 +25,43 @@ public class SearchController {
     }
 
     @GetMapping
-    public SearchResponse
+    public Object
     getTrainerOnlyByTextAndPage(@RequestBody SearchRequest searchRequest) {
 
         String text = searchRequest.text;
         int page = searchRequest.page;
 
         String message;
-        List<Trainer> trainers;
 
-        SearchResponse searchResponse;
+        SearchResponse searchResponse = null;
+        Object response = null;
 
         try {
             searchResponse = searchService.getTrainerOnPageByText(text, page);
 
             List<Trainer> trainersFound = searchResponse.getTrainersFound();
 
+
             if ((trainersFound == null) || (trainersFound.size() == 0)) {
+
                 message = "Нет репетиторов, удволетворяющих поиску!";
+
             } else {
-                message = "Найдено: " + trainersFound.size() + " репетиторов!";
+
+                message = "Найдено: " + searchResponse.getTotalCount() + " репетиторов!";
+
             }
+
+
+            searchResponse.setMessage(message);
+            response = searchResponse;
         } catch (ServiceException e) {
             //TODO: LOG !
-            message = e.getMessage();
-            trainers = null;
 
-            searchResponse = new SearchResponse();
-            searchResponse.setTrainersFound(trainers);
-            searchResponse.setTotalCount(NO_TRAINERS_FOUND);
-            searchResponse.setPage(page);
+            response = new ErrorResponse(false, e.getMessage());
         }
 
-        searchResponse.setMessage(message);
-
-        return searchResponse;
+        return response;
     }
 
     public static final class SearchRequest {
