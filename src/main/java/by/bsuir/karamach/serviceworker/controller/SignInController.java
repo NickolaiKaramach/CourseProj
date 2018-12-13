@@ -4,7 +4,6 @@ import by.bsuir.karamach.serviceworker.entity.*;
 import by.bsuir.karamach.serviceworker.logic.ServiceException;
 import by.bsuir.karamach.serviceworker.logic.impl.CustomerService;
 import by.bsuir.karamach.serviceworker.logic.impl.SignInService;
-import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
@@ -66,7 +65,7 @@ public class SignInController {
         return isSuccessful ? logInResponse : errorResponse;
     }
 
-    @GetMapping(path = "/logout")
+    @PostMapping(path = "/logout")
     public Object doLogout(HttpServletRequest req) {
 
         String token = req.getHeader("Authorization");
