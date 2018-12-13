@@ -6,18 +6,16 @@ import by.bsuir.karamach.serviceworker.entity.Trainer;
 import by.bsuir.karamach.serviceworker.logic.ServiceException;
 import by.bsuir.karamach.serviceworker.logic.impl.SearchService;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
 
 @RestController
-@RequestMapping(path = "/search")
+@RequestMapping(path = "/trainers")
 public class SearchController {
 
 
-    private static final int NO_TRAINERS_FOUND = 0;
     private SearchService searchService;
 
     public SearchController(SearchService searchService) {
@@ -26,15 +24,11 @@ public class SearchController {
 
     @GetMapping
     public Object
-    getTrainerOnlyByTextAndPage(@RequestBody SearchRequest searchRequest) {
-
-        String text = searchRequest.text;
-        int page = searchRequest.page;
-
+    getTrainerOnlyByTextAndPage(String text, int page) {
         String message;
 
-        SearchResponse searchResponse = null;
-        Object response = null;
+        SearchResponse searchResponse;
+        Object response;
 
         try {
             searchResponse = searchService.getTrainerOnPageByText(text, page);
@@ -42,7 +36,10 @@ public class SearchController {
             List<Trainer> trainersFound = searchResponse.getTrainersFound();
 
 
-            if ((trainersFound == null) || (trainersFound.size() == 0)) {
+            boolean isNoTrainersAvailable =
+                    (trainersFound == null) || (trainersFound.size() == 0);
+
+            if (isNoTrainersAvailable) {
 
                 message = "Нет репетиторов, удволетворяющих поиску!";
 
@@ -62,10 +59,5 @@ public class SearchController {
         }
 
         return response;
-    }
-
-    public static final class SearchRequest {
-        public String text;
-        public int page;
     }
 }

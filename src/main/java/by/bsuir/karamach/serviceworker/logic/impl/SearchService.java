@@ -43,6 +43,7 @@ public class SearchService {
         int totalCount = 0;
 
         boolean isValidData = isValidText && isValidPage;
+
         if (!isValidData) {
             throw new ServiceException("Некорректные данные!");
         }
@@ -60,30 +61,42 @@ public class SearchService {
 
 
         } else {
-            List<Trainer> tempTrainers = trainerRepository.findAllByActiveIsTrue();
-
-            for (Trainer trainer : tempTrainers) {
-
-                Customer customerData = trainer.getCustomer();
-
-                String lastName = customerData.getLastName().toUpperCase();
-                String firstName = customerData.getFirstName().toUpperCase();
-
-                if ((lastName.contains(searchingText)) || (firstName.contains(searchingText))) {
-                    if ((totalCount < PAGE_SIZE * (page + 1)) && (PAGE_SIZE * page <= totalCount)) {
-                        trainers.add(trainer);
-                    }
-                    totalCount++;
-                }
-            }
+            totalCount = formResultByTrainerName(searchingText, page, trainers);
         }
 
+        searchResponse = formSearchResponse(page, trainers, totalCount);
+
+        return searchResponse;
+    }
+
+    private SearchResponse formSearchResponse(int page, List<Trainer> trainers, int totalCount) {
+        SearchResponse searchResponse;
         searchResponse = new SearchResponse();
         searchResponse.setTrainersFound(trainers);
         searchResponse.setPage(page);
 
         searchResponse.setTotalCount(totalCount);
-
         return searchResponse;
+    }
+
+    private int formResultByTrainerName(String searchingText, int page, List<Trainer> trainers) {
+        int totalCount = 0;
+        List<Trainer> tempTrainers = trainerRepository.findAllByActiveIsTrue();
+
+        for (Trainer trainer : tempTrainers) {
+
+            Customer customerData = trainer.getCustomer();
+
+            String lastName = customerData.getLastName().toUpperCase();
+            String firstName = customerData.getFirstName().toUpperCase();
+
+            if ((lastName.contains(searchingText)) || (firstName.contains(searchingText))) {
+                if ((totalCount < PAGE_SIZE * (page + 1)) && (PAGE_SIZE * page <= totalCount)) {
+                    trainers.add(trainer);
+                }
+                totalCount++;
+            }
+        }
+        return totalCount;
     }
 }

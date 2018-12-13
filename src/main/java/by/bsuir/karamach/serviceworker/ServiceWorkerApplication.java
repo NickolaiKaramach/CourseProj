@@ -50,7 +50,7 @@ public class ServiceWorkerApplication extends WebSecurityConfigurerAdapter {
             new AntPathRequestMatcher("/login**"),
             new AntPathRequestMatcher("/error**"),
             new AntPathRequestMatcher("/register/customer**"),
-            new AntPathRequestMatcher("/search**"),
+            new AntPathRequestMatcher("/trainers**"),
             new AntPathRequestMatcher("/activate**"),
             new AntPathRequestMatcher("/statistic"),
             new AntPathRequestMatcher("/logout")
