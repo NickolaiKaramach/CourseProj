@@ -5,7 +5,7 @@ import by.bsuir.karamach.serviceworker.entity.SearchResponse;
 import by.bsuir.karamach.serviceworker.entity.Trainer;
 import by.bsuir.karamach.serviceworker.logic.ServiceException;
 import by.bsuir.karamach.serviceworker.logic.impl.SearchService;
-import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.List;
 
 @RestController
-@RequestMapping(path = "/search")
+@RequestMapping(path = "/trainers")
 public class SearchController {
 
 
@@ -24,7 +24,7 @@ public class SearchController {
         this.searchService = searchService;
     }
 
-    @GetMapping
+    @PostMapping
     public Object
     getTrainerOnlyByTextAndPage(@RequestBody SearchRequest searchRequest) {
 
