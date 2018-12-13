@@ -2,15 +2,11 @@ package by.bsuir.karamach.serviceworker.controller;
 
 import by.bsuir.karamach.serviceworker.entity.*;
 import by.bsuir.karamach.serviceworker.logic.ServiceException;
+import by.bsuir.karamach.serviceworker.logic.impl.CustomerService;
 import by.bsuir.karamach.serviceworker.logic.impl.RegisterService;
-import by.bsuir.karamach.serviceworker.repository.CustomerRepository;
-import by.bsuir.karamach.serviceworker.security.SecurityHelper;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
-
-import java.util.HashMap;
-import java.util.Map;
 
 @RestController
 public class RegisterController {
@@ -18,18 +14,17 @@ public class RegisterController {
     private static final String REGISTER_STATUS_OK = "Successfully registered new student!";
     private static final boolean IS_SUCCESSFUL = true;
     private static final boolean IS_NOT_SUCCESSFUL = false;
+
     private RegisterService registerService;
 
-    private SecurityHelper securityHelper;
+    private CustomerService customerService;
 
-    private CustomerRepository customerRepository;
 
-    public RegisterController(RegisterService registerService, SecurityHelper securityHelper,
-                              CustomerRepository customerRepository) {
+    public RegisterController(RegisterService registerService, CustomerService customerService) {
         this.registerService = registerService;
-        this.customerRepository = customerRepository;
-        this.securityHelper = securityHelper;
+        this.customerService = customerService;
     }
+
 
     @PostMapping(path = "/activate")
     public Object activate(@RequestBody ActivationDetails activationDetails) {
@@ -50,16 +45,11 @@ public class RegisterController {
         Object response;
 
         if (customer != null) {
-            Map<String, String> tokenValues = new HashMap<>();
 
-            tokenValues.put("email", customer.getEmail());
-            tokenValues.put("password", customer.getHashedPass());
-
-            String jwtToken = securityHelper.generateJWTToken(tokenValues);
-            customer.setTempToken(jwtToken);
-            customerRepository.save(customer);
+            String jwtToken = customerService.renewCustomerJWTToken(customer);
 
             response = new LogInResponse(IS_SUCCESSFUL, jwtToken, customer);
+
         } else {
             response = new ErrorResponse(IS_NOT_SUCCESSFUL, message);
         }
@@ -91,8 +81,8 @@ public class RegisterController {
     }
 
     public static final class ActivationDetails {
-        public String publicId;
-        public String code;
+        String publicId;
+        String code;
     }
 
 }
