@@ -1,0 +1,9 @@
+INSERT INTO RBS.trainers_subjects (trainer_id, subject_id) VALUES (1, 1);
+INSERT INTO RBS.trainers_subjects (trainer_id, subject_id) VALUES (1, 2);
+INSERT INTO RBS.trainers_subjects (trainer_id, subject_id) VALUES (1, 3);
+INSERT INTO RBS.trainers_subjects (trainer_id, subject_id) VALUES (2, 1);
+INSERT INTO RBS.trainers_subjects (trainer_id, subject_id) VALUES (3, 1);
+INSERT INTO RBS.trainers_subjects (trainer_id, subject_id) VALUES (3, 2);
+INSERT INTO RBS.trainers_subjects (trainer_id, subject_id) VALUES (4, 3);
+INSERT INTO RBS.trainers_subjects (trainer_id, subject_id) VALUES (5, 2);
+INSERT INTO RBS.trainers_subjects (trainer_id, subject_id) VALUES (5, 3);
