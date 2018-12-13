@@ -4,7 +4,7 @@ import by.bsuir.karamach.serviceworker.entity.Subject;
 import org.springframework.data.repository.CrudRepository;
 
 public interface SubjectRepository extends CrudRepository<Subject, Integer> {
-    Subject findByNameContains(String text);
+    Subject findByNameEquals(String text);
 
     Integer countAllByUsedIsTrue();
 }

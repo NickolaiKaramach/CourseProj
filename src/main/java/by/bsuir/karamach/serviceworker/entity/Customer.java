@@ -1,5 +1,7 @@
 package by.bsuir.karamach.serviceworker.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import javax.persistence.*;
 import java.util.Set;
 
@@ -23,11 +25,14 @@ public class Customer {
     @ElementCollection(targetClass = AccessRole.class, fetch = FetchType.EAGER)
     @CollectionTable(name = "user_role", joinColumns = @JoinColumn(name = "customer_id"))
     @Enumerated(EnumType.STRING)
+    @JsonIgnore
     private Set<AccessRole> role;
 
 
+    @JsonIgnore
     private String hashedPass;
 
+    @JsonIgnore
     private String tempToken;
 
 

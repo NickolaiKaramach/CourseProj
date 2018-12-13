@@ -48,7 +48,7 @@ public class SearchService {
             throw new ServiceException("Некорректные данные!");
         }
 
-        Subject subject = subjectRepository.findByNameContains(searchingText);
+        Subject subject = subjectRepository.findByNameEquals(searchingText);
 
         if (subject != null) {
 
