@@ -52,7 +52,8 @@ public class ServiceWorkerApplication extends WebSecurityConfigurerAdapter {
             new AntPathRequestMatcher("/register/customer**"),
             new AntPathRequestMatcher("/search**"),
             new AntPathRequestMatcher("/activate**"),
-            new AntPathRequestMatcher("/statistic")
+            new AntPathRequestMatcher("/statistic"),
+            new AntPathRequestMatcher("/logout")
     );
 
     private static final RequestMatcher PROTECTED_URLS = new NegatedRequestMatcher(PUBLIC_URLS);

@@ -38,14 +38,19 @@ public class SignInService implements AuthorizationService {
     }
 
     @Override
-    public void logOut(String tempToken) throws ServiceException {
+    public boolean logOut(String tempToken) throws ServiceException {
         Customer customer = customerRepository.findByTempToken(tempToken);
+        boolean status;
 
         if (customer != null) {
+            status = true;
             customer.setTempToken(EXPIRED_TEMP_TOKEN_FLAG);
             customerRepository.save(customer);
         } else {
-            throw new ServiceException("Could not find current session!");
+            status = false;
+            //TODO: LOG !
         }
+
+        return status;
     }
 }

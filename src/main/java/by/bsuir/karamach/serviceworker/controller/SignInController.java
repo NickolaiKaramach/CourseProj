@@ -1,15 +1,15 @@
 package by.bsuir.karamach.serviceworker.controller;
 
-import by.bsuir.karamach.serviceworker.entity.Customer;
-import by.bsuir.karamach.serviceworker.entity.ErrorResponse;
-import by.bsuir.karamach.serviceworker.entity.LogInResponse;
-import by.bsuir.karamach.serviceworker.entity.LoginInfo;
+import by.bsuir.karamach.serviceworker.entity.*;
 import by.bsuir.karamach.serviceworker.logic.ServiceException;
 import by.bsuir.karamach.serviceworker.logic.impl.CustomerService;
 import by.bsuir.karamach.serviceworker.logic.impl.SignInService;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
+
+import javax.servlet.http.HttpServletRequest;
 
 @RestController
 public class SignInController {
@@ -62,8 +62,33 @@ public class SignInController {
         ErrorResponse errorResponse = new ErrorResponse(isSuccessful, msg);
 
         LogInResponse logInResponse = new LogInResponse(isSuccessful, jwtToken, customer);
-        
+
         return isSuccessful ? logInResponse : errorResponse;
+    }
+
+    @GetMapping(path = "/logout")
+    public Object doLogout(HttpServletRequest req) {
+
+        String token = req.getHeader("Authorization");
+
+        Object response;
+        boolean status;
+
+        try {
+            status = signInService.logOut(token);
+        } catch (ServiceException e) {
+            status = false;
+            //TODO: LOG !
+        }
+
+        if (status) {
+            response = new PositiveResponse(true);
+        } else {
+            response = new ErrorResponse(false, "Cannot find current session!");
+        }
+
+        return response;
+
     }
 
 }
