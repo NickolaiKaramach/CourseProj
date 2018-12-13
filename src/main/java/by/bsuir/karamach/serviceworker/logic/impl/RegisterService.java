@@ -11,7 +11,7 @@ import by.bsuir.karamach.serviceworker.repository.RegistrationRequestRepository;
 import by.bsuir.karamach.serviceworker.security.SecurityHelper;
 import org.springframework.stereotype.Service;
 
-import java.util.Collections;
+import java.util.HashSet;
 
 @Service
 public class RegisterService implements UserCreationService {
@@ -76,7 +76,11 @@ public class RegisterService implements UserCreationService {
         customer.setFemale(registrationRequest.isFemale());
 
 
-        customer.setRole(Collections.singleton(AccessRole.USER));
+        HashSet<AccessRole> roles = new HashSet<>(1);
+        roles.add(AccessRole.USER);
+
+        customer.setRole(roles);
+
         return customer;
     }
 
